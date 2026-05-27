@@ -1,28 +1,29 @@
-# Translational Group
+# 转化组
 
-转化组协作仓库。**main 分支为团队入口，项目代码在个人分支上管理。**
+转化组协作仓库。个人在自己的分支上开发，项目成熟并经审查后合并入 main。
 
-## 分支模型
+## 分支结构
 
 ```
-main  (只读 — 仅含本 README + CI 配置)
+main  (受保护 — 团队入口 + 已审查通过的成熟项目)
 │
-├── edwarchen/dev  ───  projects/TCR_Pipeline_Optim/      # 成员项目
-├── zhangsan/dev   ───  projects/his-project/             # 成员项目
-├── lisi/dev       ───  projects/her-project/             # 成员项目
+├── edwarchen/dev  ───  TCR_Pipeline_Optim/              # 开发中
+├── zhangsan/dev   ───  his-project/                     # 开发中
+├── lisi/dev       ───  her-project/                     # 开发中
 └── ...
 ```
 
-- **main 分支不含项目代码**，仅保留团队入口和 CI 配置
-- 每个成员在自己的 `{username}/{suffix}` 分支上独立开发
-- `projects/` 目录下各自管理项目，互不干扰
-- 合并到 main 通过 Pull Request + 1 人审批
+- **main 分支**：存放团队入口文档、CI 配置，以及**经 PR 审查通过、可融入主 pipeline 的成熟项目代码**
+- **个人分支**：每个成员在 `{username}/{suffix}` 上自由开发，不受限制
+- **合并流程**：个人分支 → PR → 审查 → merge 到 main
 
-## 当前成员与项目
+## 当前项目
 
-| 成员 | 分支 | 项目 |
-|---|---|---|
-| [@edwarchen](https://github.com/edwarchen) | [`edwarchen/dev`](https://github.com/edwarchen/Translational-Group/tree/edwarchen/dev) | TCR 管线优化（MiXCR 预设对比、VDJTools 交叉验证） |
+| 项目 | 负责人 | 状态 | 分支 |
+|---|---|---|---|
+| TCR 管线优化 | [@edwarchen](https://github.com/edwarchen) | 开发中 | [`edwarchen/dev`](https://github.com/edwarchen/Translational-Group/tree/edwarchen/dev) |
+
+*main 暂无已合并的成熟项目。*
 
 ## 新成员加入
 
@@ -37,8 +38,8 @@ main  (只读 — 仅含本 README + CI 配置)
 ```bash
 git clone https://github.com/edwarchen/Translational-Group.git
 cd Translational-Group
-git fetch origin
-git checkout your-username/dev
+git fetch origin  # 获取远程仓库最新的状态
+git checkout your-username/dev  # 切换到个人分支
 
 # 创建你的项目目录
 mkdir -p projects/your-project
