@@ -1,0 +1,3 @@
+#filepath	sample_id
+/haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/generic-amplicon/S044_SZ20250508032WHB-2_gdna_genome_2537265/S044_SZ20250508032WHB-2_gdna_genome_2537265.TRB.convert.txt	S044_SZ20250508032WHB-2_gdna_genome_2537265_amp
+/haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/rna-seq/S044_SZ20250508032WHB-2_gdna_genome_2537265/S044_SZ20250508032WHB-2_gdna_genome_2537265.TRB.convert.txt	S044_SZ20250508032WHB-2_gdna_genome_2537265_rna

@@ -1,0 +1,6 @@
+# MiXCR raw output (too large for GitHub, server-side data)
+test_v3/
+test_v3_rnaseq/
+
+# OS files
+.DS_Store

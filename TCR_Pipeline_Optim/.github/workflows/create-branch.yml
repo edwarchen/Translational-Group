@@ -1,0 +1,28 @@
+name: Create User Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: 'GitHub username'
+        required: true
+        type: string
+      branch_suffix:
+        description: 'Branch name suffix (e.g. "feature", "fix")'
+        required: false
+        type: string
+        default: 'dev'
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create user branch from main
+        run: |
+          BRANCH_NAME="${{ github.event.inputs.username }}/${{ github.event.inputs.branch_suffix }}"
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
+          echo "Created branch: $BRANCH_NAME"
