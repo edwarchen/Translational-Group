@@ -180,3 +180,46 @@ TCR_Pipeline_Optim/
 | Python | 3.8+ | 下游分析与可视化 |
 | pandas / numpy / scipy | — | 数据处理与统计 |
 | matplotlib | — | 绑图 |
+
+---
+
+## 协作指南
+
+### 分支策略
+
+```
+main (受保护，PR + 审批强制)
+├── edwarchen/dev           # 你的开发分支
+├── zhangsan/feature        # 同事A的分支
+├── lisi/fix                # 同事B的分支
+└── ...
+```
+
+- **main** 只读保护，任何人不能直接 push
+- 每个人在 `{username}/{suffix}` 分支上独立开发
+- 合并到 main 必须提 PR 且至少 1 人审批
+
+### 新成员加入
+
+1. 仓库管理员在 **Settings → Collaborators** 邀请新成员
+2. 新成员接受邀请后，在 **Actions → Create User Branch → Run workflow** 输入自己的 GitHub 用户名，自动创建 `{username}/dev` 分支
+3. 克隆仓库，切换到自己的分支开始工作：
+
+```bash
+git clone https://github.com/edwarchen/TCR_Pipeline_Optim.git
+cd TCR_Pipeline_Optim
+git fetch origin
+git checkout your-username/dev
+```
+
+### 提交代码
+
+```bash
+# 在自己的分支上开发
+git add <files>
+git commit -m "feat: description"
+git push
+
+# 通过 GitHub 网页创建 Pull Request → 选择 main 作为 target
+# 至少 1 人审批通过后合并
+```
