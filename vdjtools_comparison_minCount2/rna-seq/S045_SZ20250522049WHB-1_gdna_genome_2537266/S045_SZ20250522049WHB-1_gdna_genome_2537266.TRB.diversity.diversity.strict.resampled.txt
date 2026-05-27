@@ -1,0 +1,2 @@
+sample_id	metadata_blank	reads	diversity	resample_reads	observedDiversity_mean	observedDiversity_std	chaoE_mean	chaoE_std	efronThisted_mean	efronThisted_std	chao1_mean	chao1_std	d50Index_mean	d50Index_std	shannonWienerIndex_mean	shannonWienerIndex_std	normalizedShannonWienerIndex_mean	normalizedShannonWienerIndex_std	inverseSimpsonIndex_mean	inverseSimpsonIndex_std
+S045_SZ20250522049WHB-1_gdna_genome_2537266	.	28824471	39327	28824471	39327	0	NA	NA	37372	0	39327	0	0.9447707681745365	0.0	6237.096327675672	0.0	0.8259494711732807	0.0	1074.0166173215105	0.0

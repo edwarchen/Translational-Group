@@ -1,0 +1,40 @@
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.codehaus.groovy.vmplugin.v7.Java7$1 (file:/haplox/users/donglf/TCR_chenyr/shell/vdjtools-1.2.1/vdjtools-1.2.1.jar) to constructor java.lang.invoke.MethodHandles$Lookup(java.lang.Class,int)
+WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.vmplugin.v7.Java7$1
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+Executing com.antigenomics.vdjtools.overlap.ClusterSamples -i aa -p /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.pwdist /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.cluster
+[Tue May 26 10:18:31 CST 2026 ClusterSamples] Reading data header
+[Tue May 26 10:18:31 CST 2026 ClusterSamples] Clustering samples and plotting.
+[RUtil] Executing Rscript cluster_samples.r /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.pwdist.intersect.batch.aa.txt 1 2 18 0 0 0 1 2 NA F /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.cluster.hc.aa.F.pdf /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.cluster.mds.aa.F.pdf T /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.cluster.hc.aa.F.newick.txt /haplox/users/chenya/TCR_TEST/vdjtools_comparison_minCount2/cluster/all.TRB.cluster.mds.aa.F.txt
+[ERROR] 载入需要的程辑包：ape
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  不存在叫‘ape’这个名字的程辑包
+载入需要的程辑包：reshape2
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  不存在叫‘reshape2’这个名字的程辑包
+载入需要的程辑包：ggplot2
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  不存在叫‘ggplot2’这个名字的程辑包
+载入需要的程辑包：MASS
+载入需要的程辑包：plotrix
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  不存在叫‘plotrix’这个名字的程辑包
+载入需要的程辑包：RColorBrewer
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  不存在叫‘RColorBrewer’这个名字的程辑包
+载入需要的程辑包：scales
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  不存在叫‘scales’这个名字的程辑包
+Error in dcast(df.sym, id_col1 ~ id_col2, value.var = "measure_col") : 
+  没有"dcast"这个函数
+Calls: as.matrix
+停止执行
+
+[Tue May 26 10:18:32 CST 2026 ClusterSamples] Finished
