@@ -1,13 +1,13 @@
 # Translational Group
 
-肿瘤转化研究协作仓库。**main 分支为团队入口，项目代码在个人分支上管理。**
+转化组仓库。**main 分支为团队入口，项目代码在个人分支上管理。**
 
 ## 分支模型
 
 ```
 main  (只读 — 仅含本 README + CI 配置)
 │
-├── edwarchen/dev  ───  projects/TCR_Pipeline_Optim/      # TCR 管线优化
+├── edwarchen/dev  ───  projects/TCR_Pipeline_Optim/      # 成员项目
 ├── zhangsan/dev   ───  projects/his-project/             # 成员项目
 ├── lisi/dev       ───  projects/her-project/             # 成员项目
 └── ...
