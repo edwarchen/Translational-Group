@@ -1,0 +1,31 @@
+# TCR/BCR Primer Evaluation — default configuration
+# All paths are relative to the project root.
+
+evaluation:
+  max_mismatch: 3
+  allowed_binding_ratio: 1.0
+  pcr_settings_xml: "A_Taq_PCR_design.xml"
+  trim_fw: 0
+  trim_rev: 5
+
+targets:
+  TRB:
+    v_ref: "data/TRBV.fasta"
+    j_ref: "data/TRBJ.fasta"
+    v_primers: "data/primer_set/TRBV_primers.fasta"
+    j_primers: "data/primer_set/TRBJ_primers.fasta"
+  IGH:
+    v_ref: "data/IGHV.fasta"
+    j_ref: "data/IGHJ.fasta"
+    v_primers: "data/primer_set/IGHV_primers.fasta"
+    j_primers: "data/primer_set/IGHJ_primers.fasta"
+  IGK:
+    v_ref: "data/IGKV.fasta"
+    j_ref: "data/IGKJ.fasta"
+    v_primers: "data/primer_set/IGKV_primers.fasta"
+    j_primers: "data/primer_set/IGKJ_primers.fasta"
+  IGL:
+    v_ref: "data/IGLV.fasta"
+    j_ref: "data/IGLJ.fasta"
+    v_primers: "data/primer_set/IGLV_primers_New.fasta"
+    j_primers: "data/primer_set/IGLJ_primers.fasta"
