@@ -1,67 +1,67 @@
 # Translational Group
 
-肿瘤转化研究协作仓库。每个成员在自己的分支下管理独立项目。
+肿瘤转化研究协作仓库。**main 分支为团队入口，项目代码在个人分支上管理。**
 
-## 仓库结构
-
-```
-Translational-Group/
-├── projects/
-│   ├── TCR_Pipeline_Optim/     # edwarchen: TCR 分析管线优化
-│   └── (your project)/         # 你的项目
-└── README.md
-```
-
-## 当前项目
-
-| 项目 | 负责人 | 分支 | 说明 |
-|---|---|---|---|
-| [TCR_Pipeline_Optim](projects/TCR_Pipeline_Optim/) | @edwarchen | `edwarchen/dev` | MiXCR 预设对比与标准化 TCR 分析管线 |
-
-## 协作方式
-
-### 分支策略
+## 分支模型
 
 ```
-main (受保护，PR + 审批强制)
-├── edwarchen/dev           # 个人分支
-├── username/dev            # 你的分支
+main  (只读 — 仅含本 README + CI 配置)
+│
+├── edwarchen/dev  ───  projects/TCR_Pipeline_Optim/      # TCR 管线优化
+├── zhangsan/dev   ───  projects/his-project/             # 成员项目
+├── lisi/dev       ───  projects/her-project/             # 成员项目
 └── ...
 ```
 
-- **main** 受保护，所有改动必须通过 Pull Request + 审批
-- 每个人在自己的 `{username}/{suffix}` 分支上独立开发
-- 互不干扰，各自管理各自的项目
+- **main 分支不含项目代码**，仅保留团队入口和 CI 配置
+- 每个成员在自己的 `{username}/{suffix}` 分支上独立开发
+- `projects/` 目录下各自管理项目，互不干扰
+- 合并到 main 通过 Pull Request + 1 人审批
 
-### 新成员加入
+## 当前成员与项目
 
-1. 管理员在 **Settings → Collaborators** 邀请你
-2. 接受邀请后，在 **Actions → Create User Branch** 输入你的 GitHub 用户名，自动创建 `{username}/dev` 分支
-3. 克隆并切换到自己的分支：
+| 成员 | 分支 | 项目 |
+|---|---|---|
+| [@edwarchen](https://github.com/edwarchen) | [`edwarchen/dev`](https://github.com/edwarchen/Translational-Group/tree/edwarchen/dev) | TCR 管线优化（MiXCR 预设对比、VDJTools 交叉验证） |
+
+## 新成员加入
+
+### 1. 获得仓库访问权限
+管理员在 **Settings → Collaborators → Add people** 邀请你的 GitHub 账号。
+
+### 2. 创建你的分支
+接受邀请后，在仓库 **Actions → Create User Branch → Run workflow** 输入你的 GitHub 用户名，自动创建 `{username}/dev` 分支。
+
+### 3. 克隆并开始工作
 
 ```bash
 git clone https://github.com/edwarchen/Translational-Group.git
 cd Translational-Group
 git fetch origin
 git checkout your-username/dev
+
+# 创建你的项目目录
+mkdir -p projects/your-project
+cd projects/your-project
+# ... 开始工作 ...
 ```
 
-4. 在 `projects/` 下创建自己的项目目录，开始工作
-
-### 提交与合并
+### 4. 提交更改
 
 ```bash
 git add projects/your-project/
-git commit -m "feat: description"
+git commit -m "feat: description of changes"
 git push
 
-# 在 GitHub 网页创建 Pull Request: your-username/dev → main
-# 需要至少 1 人审批
+# 在 GitHub 网页创建 Pull Request → your-username/dev → main
+# 需要至少 1 人审批通过后合并
 ```
 
 ## 分支保护规则
 
-- **Require a pull request before merging** ✓
-- **Require 1 approval** ✓
-- **Allow force pushes** ✗
-- **Allow deletions** ✗
+| 规则 | 状态 |
+|---|---|
+| Require pull request before merging | ✅ |
+| Require 1 approval | ✅ |
+| Allow force pushes | ❌ |
+| Allow deletions | ❌ |
