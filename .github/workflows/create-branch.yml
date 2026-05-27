@@ -24,9 +24,8 @@ jobs:
         run: |
           BRANCH_NAME="${{ github.event.inputs.username }}/${{ github.event.inputs.branch_suffix }}"
           git checkout -b "$BRANCH_NAME"
-          mkdir -p "projects/scratch"
-          touch "projects/scratch/.gitkeep"
-          git add projects/scratch/.gitkeep
+          touch ".gitkeep"
+          git add .gitkeep
           git commit -m "init: create branch for @${{ github.event.inputs.username }}"
           git push origin "$BRANCH_NAME"
           echo "Created branch: $BRANCH_NAME"

@@ -42,15 +42,15 @@ git fetch origin  # 获取远程仓库最新的状态
 git checkout your-username/dev  # 切换到个人分支
 
 # 创建你的项目目录
-mkdir -p projects/your-project
-cd projects/your-project
+mkdir your-project
+cd your-project
 # ... 开始工作 ...
 ```
 
 ### 4. 提交更改
 
 ```bash
-git add projects/your-project/
+git add your-project/
 git commit -m "feat: description of changes"
 git push
 
