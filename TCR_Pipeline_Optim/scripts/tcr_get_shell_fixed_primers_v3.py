@@ -9,9 +9,13 @@
 import pandas as pd
 import sys
 import os
-import utils
 
-TCR_PIPELINE = '/haplox/users/chenya/TCR_TEST/scripts/TCR_analysis_pipeline.v7.sh'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+TCR_PIPELINE = os.path.join(SCRIPT_DIR, 'TCR_analysis_pipeline.v7.sh')
+
+if not os.path.isfile(TCR_PIPELINE):
+    print(f"ERROR: TCR_analysis_pipeline.v7.sh not found next to {__file__}: {TCR_PIPELINE}")
+    sys.exit(1)
 
 sample_info_table = pd.read_csv(sys.argv[1], sep='\t')
 cols = sample_info_table.columns.tolist()
@@ -61,7 +65,7 @@ for _, row in sample_info_table.iterrows():
 
     os.makedirs(sample_dir, exist_ok=True)
 
-    if utils.check_file(row['Raw_Path_R1']) and utils.check_file(row['Raw_Path_R2']):
+    if os.path.isfile(row['Raw_Path_R1']) and os.path.isfile(row['Raw_Path_R2']):
         all_get_shell_script_fh.write(
             f'{TCR_PIPELINE} {row["Raw_Path_R1"]} {row["Raw_Path_R2"]} '
             f'{sample_dir} {sample_id} {THREAD} {chain} {PRESET}\n'

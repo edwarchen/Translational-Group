@@ -40,11 +40,26 @@ make_row() {
         "$sed_id" "$sample_id" "$project" "$adapter" "$panel" "$data_id"
 }
 
+make_row_with_name() {
+    local sed_id=$1
+    local sample_id=$2
+    local name=$3
+    local project=$4
+    local adapter=$5
+    local panel=$6
+    local data_id=$7
+    printf '%s,%s,LIB001,"%s",c5,c6,c7,%s,c9,c10,c11,%s,c13,c14,c15,%s,c17,c18,c19,c20,c21,c22,c23,%s\n' \
+        "$sed_id" "$sample_id" "$name" "$project" "$adapter" "$panel" "$data_id"
+}
+
 {
     make_row "RUN001" "SAMPLE_A" "肺结节" "Adapter_TCR_V1" "PanelA" "cos://bucket/sample_a"
     make_row "RUN001" "SAMPLE_B" "其他项目" "Adapter_TCR_V1" "PanelB" "cos://bucket/sample_b"
     make_row "RUN002" "SAMPLE_C" "肺结节" "Adapter_TCR_V1" "PanelC" "cos://bucket/sample_c"
     make_row "RUN003" "SAMPLE_D" "肺结节" "Adapter_BCR_V1" "PanelD" "cos://bucket/sample_d"
+    make_row_with_name "RUN004" "SAMPLE_E" "Name, With Comma" "肺结节" "Adapter_TCR_V1" "PanelE" "cos://bucket/sample_e"
+    make_row "RUN005" "SAMPLE_LITERAL" "项目.精确" "Adapter.TCR" "PanelLiteral" "cos://bucket/sample_literal"
+    make_row "RUN005" "SAMPLE_OTHER" "项目X精确" "AdapterXTCR" "PanelOther" "cos://bucket/sample_other"
 } > "$info_csv"
 
 help_output="$(bash "$SCRIPT" --help)"
@@ -109,6 +124,49 @@ sample_line="$(tail -n 1 "$filtered_info")"
 assert_contains "$sample_line" "SAMPLE_A" "filtered_info.csv should keep matching sample"
 assert_contains "$sample_line" "TRB" "filtered_info.csv should append requested chain"
 assert_contains "$sample_line" "TCR" "legacy runs should append default TCR receptor"
+
+bash "$SCRIPT" \
+    --batch-id batch-quoted-comma \
+    --info-csv "$info_csv" \
+    --sed-id RUN004 \
+    --chain TRB \
+    --rawfq-root "$rawfq_root" \
+    --work-root "$work_root" \
+    --download-script "$download_script" \
+    --match-script "$match_script" \
+    --python-bin python3 \
+    --prepare-only >/dev/null
+
+quoted_comma_line="$(tail -n 1 "$work_root/batch-quoted-comma/filtered_info.csv")"
+assert_contains "$quoted_comma_line" "SAMPLE_E" "CSV filtering should keep rows with quoted commas"
+assert_contains "$quoted_comma_line" '"Name, With Comma"' "CSV filtering should preserve quoted comma fields"
+
+bash "$SCRIPT" \
+    --batch-id batch-literal-match \
+    --info-csv "$info_csv" \
+    --sed-id RUN005 \
+    --chain TRB \
+    --project-keyword . \
+    --adapter-pattern . \
+    --rawfq-root "$rawfq_root" \
+    --work-root "$work_root" \
+    --download-script "$download_script" \
+    --match-script "$match_script" \
+    --python-bin python3 \
+    --prepare-only >/dev/null
+
+literal_filtered_info="$work_root/batch-literal-match/filtered_info.csv"
+literal_line_count="$(wc -l < "$literal_filtered_info" | tr -d ' ')"
+if [ "$literal_line_count" != "2" ]; then
+    echo "filtered_info.csv:" >&2
+    cat "$literal_filtered_info" >&2
+    fail "adapter and project matching should treat CLI values as literal substrings"
+fi
+literal_sample_line="$(tail -n 1 "$literal_filtered_info")"
+assert_contains "$literal_sample_line" "SAMPLE_LITERAL" "literal matching should keep rows containing a literal dot"
+if [[ "$literal_sample_line" == *"SAMPLE_OTHER"* ]]; then
+    fail "literal matching should exclude rows without a literal dot"
+fi
 
 set +e
 missing_bcr_adapter_output="$(

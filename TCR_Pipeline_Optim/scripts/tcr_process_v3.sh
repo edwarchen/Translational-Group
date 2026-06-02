@@ -26,6 +26,7 @@ prepare_only=0
 dry_run=0
 
 TCR_GET_SHELL_SCRIPT="$SCRIPT_DIR/tcr_get_shell_fixed_primers_v3.py"
+FILTER_INFO_SCRIPT="$SCRIPT_DIR/filter_info.py"
 ADD_WAIT_SCRIPT=/x03_haplox/users/donglf/common_tools/add_wait.py
 TCR_QC_SCRIPT=/haplox/users/xuliu/TCR_Project/scripts/TCR_rna_pipeline/tcr_qc_allchain.py
 FASTP_QC_SCRIPT=/haplox/users/xuliu/TCR_Project/scripts/TCR_rna_pipeline/fastp_qc.v2.py
@@ -211,6 +212,11 @@ if [ ! -f "$TCR_GET_SHELL_SCRIPT" ]; then
     exit 1
 fi
 
+if [ ! -f "$FILTER_INFO_SCRIPT" ]; then
+    echo "ERROR: filter_info.py not found: $FILTER_INFO_SCRIPT" >&2
+    exit 1
+fi
+
 rawfq_dir_batch=$rawfq_dir_total/$batch_id
 working_dir_batch=$working_dir/$batch_id
 filtered_info_csv=$working_dir_batch/filtered_info.csv
@@ -235,16 +241,14 @@ fi
 
 mkdir -p "$working_dir_batch" "$working_dir_batch/log" "$rawfq_dir_batch"
 
-echo "Sed_ID,Sample_ID,Lib_number,Name,Panel,Data_ID,Chain,Receptor" > "$filtered_info_csv"
-awk -F',' \
-    -v id="$sed_id" \
-    -v adapter="$adapter_pattern" \
-    -v keyword="$project_keyword" \
-    -v chain="$chain" \
-    -v receptor="$receptor" \
-    '($1 == id) && ($12 ~ adapter) && ($8 ~ keyword) {
-        print $1","$2","$3","$4","$16","$24","chain","receptor
-    }' "$info_csv" >> "$filtered_info_csv"
+"$PYTHON_BIN" "$FILTER_INFO_SCRIPT" \
+    --input "$info_csv" \
+    --output "$filtered_info_csv" \
+    --sed-id "$sed_id" \
+    --adapter-pattern "$adapter_pattern" \
+    --project-keyword "$project_keyword" \
+    --chain "$chain" \
+    --receptor "$receptor"
 
 filtered_count=$(( $(wc -l < "$filtered_info_csv" | tr -d ' ') - 1 ))
 if [ "$filtered_count" -le 0 ]; then
@@ -280,7 +284,18 @@ if ! "$PYTHON_BIN" "$match_sample_script" "$filtered_info_csv" "$rawfq_dir_batch
     exit 1
 fi
 
+matched_count=$(( $(wc -l < ./fq_matched.tsv | tr -d ' ') - 1 ))
+if [ "$matched_count" -le 0 ]; then
+    echo "ERROR: match_sample.py produced no matched FASTQ rows: $working_dir_batch/fq_matched.tsv" >&2
+    exit 1
+fi
+
 "$PYTHON_BIN" "$TCR_GET_SHELL_SCRIPT" "$working_dir_batch/fq_matched.tsv" "$working_dir_batch" "$threads" "$PRESET"
+if [ ! -s get_shell.sh ]; then
+    echo "ERROR: tcr_get_shell_fixed_primers_v3.py produced no analysis commands: $working_dir_batch/get_shell.sh" >&2
+    exit 1
+fi
+
 "$ADD_WAIT_SCRIPT" get_shell.sh 8 run2.sh
 bash run2.sh > log/run2.log 2>&1
 "$TCR_QC_SCRIPT" . total_result.tsv
