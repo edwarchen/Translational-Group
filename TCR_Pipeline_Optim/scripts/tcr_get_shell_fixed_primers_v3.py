@@ -9,6 +9,7 @@
 import pandas as pd
 import sys
 import os
+import shlex
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TCR_PIPELINE = os.path.join(SCRIPT_DIR, 'TCR_analysis_pipeline.v7.sh')
@@ -66,9 +67,18 @@ for _, row in sample_info_table.iterrows():
     os.makedirs(sample_dir, exist_ok=True)
 
     if os.path.isfile(row['Raw_Path_R1']) and os.path.isfile(row['Raw_Path_R2']):
-        all_get_shell_script_fh.write(
-            f'{TCR_PIPELINE} {row["Raw_Path_R1"]} {row["Raw_Path_R2"]} '
-            f'{sample_dir} {sample_id} {THREAD} {chain} {PRESET}\n'
-        )
+        command_args = [
+            'bash',
+            TCR_PIPELINE,
+            row['Raw_Path_R1'],
+            row['Raw_Path_R2'],
+            sample_dir,
+            sample_id,
+            THREAD,
+            chain,
+            PRESET,
+        ]
+        command = ' '.join(shlex.quote(str(arg)) for arg in command_args)
+        all_get_shell_script_fh.write(f'{command}\n')
 
 all_get_shell_script_fh.close()

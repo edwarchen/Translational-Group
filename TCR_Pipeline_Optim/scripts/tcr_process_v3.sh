@@ -279,17 +279,22 @@ fi
 cd "$working_dir_batch"
 mkdir -p log
 
+rm -f ./fq_matched.tsv
 if ! "$PYTHON_BIN" "$match_sample_script" "$filtered_info_csv" "$rawfq_dir_batch" ./fq_matched.tsv; then
     echo "ERROR: match_sample.py failed - cannot match FASTQ files from $rawfq_dir_batch"
     exit 1
 fi
 
-matched_count=$(( $(wc -l < ./fq_matched.tsv | tr -d ' ') - 1 ))
+matched_count=0
+if [ -f ./fq_matched.tsv ]; then
+    matched_count=$(( $(wc -l < ./fq_matched.tsv | tr -d ' ') - 1 ))
+fi
 if [ "$matched_count" -le 0 ]; then
     echo "ERROR: match_sample.py produced no matched FASTQ rows: $working_dir_batch/fq_matched.tsv" >&2
     exit 1
 fi
 
+rm -f get_shell.sh
 "$PYTHON_BIN" "$TCR_GET_SHELL_SCRIPT" "$working_dir_batch/fq_matched.tsv" "$working_dir_batch" "$threads" "$PRESET"
 if [ ! -s get_shell.sh ]; then
     echo "ERROR: tcr_get_shell_fixed_primers_v3.py produced no analysis commands: $working_dir_batch/get_shell.sh" >&2
