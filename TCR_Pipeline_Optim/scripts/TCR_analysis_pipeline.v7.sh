@@ -14,10 +14,11 @@ set -e
 if [ $# -lt 7 ]; then
 echo ""
 echo "USAGE:"
-echo " $0 input_R1.fastq.gz input_R2.fastq.gz outputdir sample_key threads chain_type preset"
+echo " $0 input_R1.fastq.gz input_R2.fastq.gz outputdir sample_key threads chain_type preset [receptor]"
 echo ""
-echo " chain_type: TRA / TRB / BOTH"
+echo " chain_type: TRA / TRB / BOTH / IGH / IGK / IGL / BCR_ALL"
 echo " preset:     generic-amplicon / rna-seq"
+echo " receptor:   TCR (default) / BCR"
 echo ""
 echo "VDJTools output is written to Stat_Picture/vdjtools/"
 echo ""
@@ -31,12 +32,22 @@ key=$4
 thread=$5
 CHAIN=$6
 PRESET=$7
+RECEPTOR=${8:-TCR}
 
 # ==========================
 # 验证 preset 参数
 # ==========================
 if [ "$PRESET" != "generic-amplicon" ] && [ "$PRESET" != "rna-seq" ]; then
     echo "ERROR: preset must be 'generic-amplicon' or 'rna-seq', got '$PRESET'"
+    exit 1
+fi
+
+# ==========================
+# 验证 receptor 参数
+# ==========================
+RECEPTOR="$(echo "$RECEPTOR" | tr '[:lower:]' '[:upper:]')"
+if [ "$RECEPTOR" != "TCR" ] && [ "$RECEPTOR" != "BCR" ]; then
+    echo "ERROR: receptor must be TCR or BCR, got '$RECEPTOR'"
     exit 1
 fi
 
@@ -54,8 +65,14 @@ fi
 # ==========================
 Bin="/x03_haplox/users/donglf/TCR_chenyr/shell"
 Bin2="/x03_haplox/users/xuliu/TCR_Project/scripts/TCR_rna_pipeline"
-V_primers="/x03_haplox/users/donglf/tcr_scripts/total_primers/V10_primers/V_primer.txt"
-J_rc_primers="/x03_haplox/users/donglf/tcr_scripts/total_primers/V10_primers/J_rc_primer.txt"
+
+if [ "$RECEPTOR" == "BCR" ]; then
+    V_primers="/x03_haplox/users/donglf/tcr_scripts/total_primers/BCR_primers/V_primer.txt"
+    J_rc_primers="/x03_haplox/users/donglf/tcr_scripts/total_primers/BCR_primers/J_rc_primer.txt"
+else
+    V_primers="/x03_haplox/users/donglf/tcr_scripts/total_primers/V10_primers/V_primer.txt"
+    J_rc_primers="/x03_haplox/users/donglf/tcr_scripts/total_primers/V10_primers/J_rc_primer.txt"
+fi
 Mixcr_Jar="/haplox/users/xuliu/software/mixcr/mixcr.jar"
 JAVA11="/haplox/users/xuliu/software/java/jdk-11.0.30/bin/java"
 
@@ -72,19 +89,31 @@ mkdir -p $outdir/{Cleanfq,Merge_PE,Map_Clone_Analysis,Stat_Picture/vdjtools,log}
 # ==========================
 CHAINS_TO_RUN=()
 
-if [ "$CHAIN" == "TRB" ]; then
-    CHAINS_TO_RUN=("TRB")
-elif [ "$CHAIN" == "TRA" ]; then
-    CHAINS_TO_RUN=("TRA")
-elif [ "$CHAIN" == "BOTH" ]; then
-    CHAINS_TO_RUN=("TRB" "TRA")
+if [ "$RECEPTOR" == "BCR" ]; then
+    case "$CHAIN" in
+        IGH)   CHAINS_TO_RUN=("IGH") ;;
+        IGK)   CHAINS_TO_RUN=("IGK") ;;
+        IGL)   CHAINS_TO_RUN=("IGL") ;;
+        BCR_ALL) CHAINS_TO_RUN=("IGH" "IGK" "IGL") ;;
+        *)
+            echo "ERROR: chain_type must be IGH / IGK / IGL / BCR_ALL for BCR"
+            exit 1
+            ;;
+    esac
 else
-    echo "ERROR: chain_type must be TRA / TRB / BOTH"
-    exit 1
+    case "$CHAIN" in
+        TRB)  CHAINS_TO_RUN=("TRB") ;;
+        TRA)  CHAINS_TO_RUN=("TRA") ;;
+        BOTH) CHAINS_TO_RUN=("TRA" "TRB") ;;
+        *)
+            echo "ERROR: chain_type must be TRA / TRB / BOTH for TCR"
+            exit 1
+            ;;
+    esac
 fi
 
 echo "====================================================================="
-echo " MiXCR version: 4.6.0, preset: $PRESET"
+echo " MiXCR version: 4.6.0, preset: $PRESET, receptor: $RECEPTOR"
 echo " VDJTools analysis: enabled"
 echo " Sample: $key    Chain: $CHAIN    Threads: $thread"
 echo "====================================================================="
@@ -274,7 +303,7 @@ rm -rf $outdir/Cleanfq/*fq.gz $outdir/Merge_PE/*fastq
 
 echo ""
 echo "====================================================================="
-echo " Done: $key  (preset: $PRESET)"
+echo " Done: $key  (preset: $PRESET, receptor: $RECEPTOR)"
 if [ -f "$VDJTOOLS_JAR" ]; then
 echo " VDJTools results: $outdir/Stat_Picture/vdjtools/"
 echo "   - diversity  : *.diversity.txt"

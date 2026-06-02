@@ -295,7 +295,7 @@ if [ "$matched_count" -le 0 ]; then
 fi
 
 rm -f get_shell.sh
-"$PYTHON_BIN" "$TCR_GET_SHELL_SCRIPT" "$working_dir_batch/fq_matched.tsv" "$working_dir_batch" "$threads" "$PRESET"
+"$PYTHON_BIN" "$TCR_GET_SHELL_SCRIPT" "$working_dir_batch/fq_matched.tsv" "$working_dir_batch" "$threads" "$PRESET" "$receptor"
 if [ ! -s get_shell.sh ]; then
     echo "ERROR: tcr_get_shell_fixed_primers_v3.py produced no analysis commands: $working_dir_batch/get_shell.sh" >&2
     exit 1

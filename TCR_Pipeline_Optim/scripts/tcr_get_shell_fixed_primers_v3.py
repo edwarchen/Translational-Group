@@ -26,12 +26,21 @@ if 'Sample_ID' not in cols and 'Lib_number' in cols:
 working_dir = os.path.abspath(sys.argv[2])
 THREAD = int(sys.argv[3])
 PRESET = sys.argv[4] if len(sys.argv) > 4 else 'generic-amplicon'
+RECEPTOR = sys.argv[5].strip().upper() if len(sys.argv) > 5 else 'TCR'
 
 if PRESET not in ('generic-amplicon', 'rna-seq'):
     print(f"ERROR: preset must be 'generic-amplicon' or 'rna-seq', got '{PRESET}'")
     sys.exit(1)
 
+if RECEPTOR not in ('TCR', 'BCR'):
+    print(f"ERROR: receptor must be TCR or BCR, got '{RECEPTOR}'")
+    sys.exit(1)
+
+TCR_VALID_CHAINS = {'TRA', 'TRB', 'BOTH'}
+BCR_VALID_CHAINS = {'IGH', 'IGK', 'IGL', 'BCR_ALL'}
+
 print(f"Pipeline: {TCR_PIPELINE}")
+print(f"Receptor: {RECEPTOR}")
 print(f"Preset:   {PRESET}")
 print(f"Threads:  {THREAD}")
 all_get_shell_script = os.path.join(working_dir, 'get_shell.sh')
@@ -54,14 +63,9 @@ for _, row in sample_info_table.iterrows():
     # ==========================
     chain = str(chain).strip().upper()
 
-    if chain == 'BOTH':
-        chain = 'BOTH'
-    elif chain == 'TRA':
-        chain = 'TRA'
-    elif chain == 'TRB':
-        chain = 'TRB'
-    else:
-        print(f"WARNING: {sample_id} invalid chain '{chain}', skip")
+    valid_chains = BCR_VALID_CHAINS if RECEPTOR == 'BCR' else TCR_VALID_CHAINS
+    if chain not in valid_chains:
+        print(f"WARNING: {sample_id} invalid chain '{chain}' for receptor '{RECEPTOR}', skip")
         continue
 
     os.makedirs(sample_dir, exist_ok=True)
@@ -77,6 +81,7 @@ for _, row in sample_info_table.iterrows():
             THREAD,
             chain,
             PRESET,
+            RECEPTOR,
         ]
         command = ' '.join(shlex.quote(str(arg)) for arg in command_args)
         all_get_shell_script_fh.write(f'{command}\n')

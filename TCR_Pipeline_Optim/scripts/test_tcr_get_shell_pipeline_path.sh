@@ -56,7 +56,7 @@ if [ ! -f "$received_args" ]; then
 fi
 
 sample_dir="$work_dir/$sample_id"
-expected_args="$(printf "%s\n" "$r1" "$r2" "$sample_dir" "$sample_id" 8 TRB generic-amplicon)"
+expected_args="$(printf "%s\n" "$r1" "$r2" "$sample_dir" "$sample_id" 8 TRB generic-amplicon TCR)"
 actual_args="$(cat "$received_args")"
 if [ "$actual_args" != "$expected_args" ]; then
     echo "Expected arguments:" >&2
