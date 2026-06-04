@@ -11,6 +11,12 @@ Provides both a **command-line interface** (`tcreval`) and individual R/Python s
 
 ---
 
+## Version
+
+Current baseline: **Version 1.0.0**.
+
+This release records the existing TCR/BCR primer evaluation workflow as the Version 1.0 baseline so future development can be compared against this stable snapshot.
+
 ## Key Features
 
 - **One-Command Pipeline**: `tcreval run -i primers.xlsx -t TRB` runs the entire workflow end-to-end.
