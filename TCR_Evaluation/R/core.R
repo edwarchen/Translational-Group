@@ -163,6 +163,148 @@ save_cov_stats <- function(name, one_summary, output_dir = "results/coverage_tab
   normalizePath(stats_file, winslash = "/", mustWork = FALSE)
 }
 
+
+# ---- Save user-facing V/J coverage summary and report ----
+parse_coverage_text <- function(coverage_text) {
+  text <- as.character(coverage_text)
+  match <- regexec("^\\s*([0-9]+)\\s+of\\s+([0-9]+)\\s+\\(([-0-9.]+)%\\)\\s*$", text)
+  parts <- regmatches(text, match)[[1]]
+
+  if (length(parts) == 4) {
+    return(list(
+      covered_templates = as.integer(parts[2]),
+      total_templates = as.integer(parts[3]),
+      coverage_percent = as.numeric(parts[4])
+    ))
+  }
+
+  list(
+    covered_templates = NA_integer_,
+    total_templates = NA_integer_,
+    coverage_percent = NA_real_
+  )
+}
+
+infer_target_region <- function(target_region_name) {
+  region <- substr(target_region_name, nchar(target_region_name), nchar(target_region_name))
+
+  if (region %in% c("V", "J") && nchar(target_region_name) > 1) {
+    target <- substr(target_region_name, 1, nchar(target_region_name) - 1)
+    region_label <- ifelse(region == "V", "V-region", "J-region")
+  } else {
+    target <- target_region_name
+    region <- NA_character_
+    region_label <- "region"
+  }
+
+  list(target = target, region = region, region_label = region_label)
+}
+
+build_coverage_summary_table <- function(coverage_summary) {
+  rows <- list()
+  row_i <- 1
+
+  for (target_region_name in names(coverage_summary)) {
+    region_info <- infer_target_region(target_region_name)
+    cvg.stats <- coverage_summary[[target_region_name]]$cvg.stats
+
+    if (!all(c("Group", "Coverage") %in% colnames(cvg.stats))) next
+
+    for (i in seq_len(nrow(cvg.stats))) {
+      parsed <- parse_coverage_text(cvg.stats$Coverage[i])
+      rows[[row_i]] <- data.frame(
+        target = region_info$target,
+        region = region_info$region,
+        target_region = target_region_name,
+        group = as.character(cvg.stats$Group[i]),
+        covered_templates = parsed$covered_templates,
+        total_templates = parsed$total_templates,
+        coverage_percent = parsed$coverage_percent,
+        coverage_text = as.character(cvg.stats$Coverage[i]),
+        stringsAsFactors = FALSE
+      )
+      row_i <- row_i + 1
+    }
+  }
+
+  if (length(rows) == 0) {
+    return(data.frame(
+      target = character(),
+      region = character(),
+      target_region = character(),
+      group = character(),
+      covered_templates = integer(),
+      total_templates = integer(),
+      coverage_percent = numeric(),
+      coverage_text = character(),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  do.call(rbind, rows)
+}
+
+format_total_coverage_sentence <- function(summary_row) {
+  region_info <- infer_target_region(summary_row$target_region)
+
+  if (!is.na(summary_row$covered_templates) && !is.na(summary_row$total_templates) && !is.na(summary_row$coverage_percent)) {
+    return(sprintf(
+      "%s %s coverage: %d of %d templates covered (%.2f%%).",
+      summary_row$target,
+      region_info$region_label,
+      summary_row$covered_templates,
+      summary_row$total_templates,
+      summary_row$coverage_percent
+    ))
+  }
+
+  sprintf(
+    "%s %s coverage: %s.",
+    summary_row$target,
+    region_info$region_label,
+    summary_row$coverage_text
+  )
+}
+
+save_user_coverage_report <- function(coverage_summary, output_dir = "results/coverage_tables") {
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  summary_table <- build_coverage_summary_table(coverage_summary)
+  summary_file <- file.path(output_dir, "summary_coverage.csv")
+  report_file <- file.path(output_dir, "coverage_report.txt")
+
+  write.csv(summary_table, summary_file, row.names = FALSE)
+
+  total_rows <- summary_table[summary_table$group == "Total", , drop = FALSE]
+  report_lines <- c(
+    "TCR/BCR primer coverage summary",
+    "================================",
+    "",
+    "Overall V/J coverage:"
+  )
+
+  if (nrow(total_rows) > 0) {
+    for (i in seq_len(nrow(total_rows))) {
+      report_lines <- c(report_lines, paste0("- ", format_total_coverage_sentence(total_rows[i, , drop = FALSE])))
+    }
+  } else {
+    report_lines <- c(report_lines, "- No total coverage rows were available.")
+  }
+
+  report_lines <- c(
+    report_lines,
+    "",
+    paste0("Detailed group-level coverage table: ", normalizePath(summary_file, winslash = "/", mustWork = FALSE))
+  )
+
+  writeLines(report_lines, report_file, useBytes = TRUE)
+
+  list(
+    summary_file = normalizePath(summary_file, winslash = "/", mustWork = FALSE),
+    report_file = normalizePath(report_file, winslash = "/", mustWork = FALSE)
+  )
+}
+
 # ---- Save uncovered sequences grouped by gene family ----
 save_uncovered_sequences <- function(name, one_result, base_dir = "results/uncovered_templates") {
   template.df <- one_result$template.df
@@ -215,6 +357,11 @@ run_full_pipeline <- function(cfg, target_name = NULL, eval_settings = NULL, bas
                                   MoreArgs = list(base_dir = file.path(base_dir, "uncovered_templates")),
                                   SIMPLIFY = FALSE)
 
+  saved_user_report <- save_user_coverage_report(
+    coverage_summary,
+    output_dir = file.path(base_dir, "coverage_tables")
+  )
+
   for (target_name in names(results)) {
     cat("\n===", target_name, "primer coverage ===\n")
     cat(target_name, "coverage ratio:", coverage_summary[[target_name]]$ratio, "\n")
@@ -224,4 +371,7 @@ run_full_pipeline <- function(cfg, target_name = NULL, eval_settings = NULL, bas
     cat(target_name, "binding sites saved:", saved_binding_sites[[target_name]], "\n")
     cat(target_name, "uncovered templates dir:", saved_uncovered_paths[[target_name]], "\n")
   }
+
+  cat("\nUser-facing coverage summary saved:", saved_user_report$summary_file, "\n")
+  cat("User-facing coverage report saved:", saved_user_report$report_file, "\n")
 }
