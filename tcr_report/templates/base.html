@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title }}</title>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Microsoft YaHei", "SimSun", "Arial", sans-serif;
+            font-size: 18px;
+            color: #333;
+            background: #fff;
+            line-height: 1.85;
+        }
+
+        /* ── Page ─────────────────────────────────────── */
+        .page {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 48px 40px;
+        }
+
+        /* ── Sticky Header Bar ─────────────────────────── */
+        .report-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 12px 48px;
+            border-bottom: 2px solid #1a5276;
+        }
+
+        .report-header .header-logo {
+            height: 40px;
+        }
+
+        .report-header .header-tagline {
+            font-size: 16px;
+            color: #1a5276;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* ── Cover Page ───────────────────────────────── */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 80px 40px 60px;
+            page-break-after: always;  /* print: cover on its own page */
+        }
+
+        .cover-page .cover-logo {
+            height: 72px;
+            margin-bottom: 64px;
+        }
+
+        .cover-page .cover-tagline {
+            font-size: 20px;
+            color: #1a5276;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 52px;
+        }
+
+        .cover-page h1 {
+            font-size: 42px;
+            font-weight: bold;
+            color: #1a5276;
+            margin-bottom: 10px;
+        }
+
+        .cover-page .cover-en {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 60px;
+        }
+
+        .cover-page .cover-info {
+            font-size: 18px;
+            color: #555;
+            line-height: 2.5;
+        }
+
+        /* ── Section ──────────────────────────────────── */
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1a5276;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            font-size: 19px;
+            font-weight: bold;
+            color: #333;
+            margin: 22px 0 14px;
+        }
+
+        .section p {
+            text-indent: 2em;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        /* ── Figure Block ─────────────────────────────── */
+        .figure-block {
+            margin: 18px 0;
+        }
+
+        .figure-block .figure-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a5276;
+            margin-bottom: 12px;
+        }
+
+        .figure-block .figure-img,
+        .figure-block .static-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .figure-block .plotly-container {
+            /* Plotly chart container */
+        }
+
+        .figure-block .figure-note {
+            font-size: 15px;
+            color: #666;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #f9f9f9;
+            border-left: 3px solid #1a5276;
+        }
+
+        /* ── Tables ───────────────────────────────────── */
+        .table-block {
+            margin: 14px 0;
+        }
+
+        .table-block .table-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        table.data-table thead th {
+            background: #1a5276;
+            color: #fff;
+            padding: 7px 10px;
+            font-weight: 600;
+            text-align: left;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+
+        table.data-table tbody td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        table.data-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table.data-table tbody tr:hover {
+            background: #e8f0fe;
+        }
+
+        /* ── Table Note ───────────────────────────────── */
+        .table-note {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .table-note p {
+            text-indent: 0;
+            margin: 2px 0;
+        }
+
+        /* ── Footer ───────────────────────────────────── */
+        .report-footer {
+            text-align: center;
+            padding: 24px 0;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+            font-size: 15px;
+            color: #888;
+            line-height: 2.1;
+        }
+
+        /* ── Print ────────────────────────────────────── */
+        @media print {
+            body { font-size: 15px; }
+            .page { max-width: 100%; padding: 0 28px; }
+            .report-header { position: static; }
+        }
+
+        /* ── SOP Workflow ─────────────────────────────── */
+        .sop-workflow { margin: 20px 0 12px; padding: 24px 24px 22px; border: 1px solid #d7e1ea; background: #fbfcfd; }
+        .sop-workflow-title { font-size: 17px; font-weight: bold; color: #1a5276; margin-bottom: 14px; letter-spacing: 0.5px; }
+        .sop-input-block { border: 1px solid #b8c7d3; background: #fff; padding: 14px 18px 16px; }
+        .sop-block-title { font-size: 15px; font-weight: bold; color: #1a5276; margin-bottom: 12px; padding-bottom: 7px; border-bottom: 1px solid #edf1f5; }
+        .sop-flow-row { display: flex; align-items: stretch; gap: 8px; }
+        .sop-step { flex: 1 1 0; min-width: 0; border: 1px solid #b8c7d3; background: #fff; padding: 12px 10px; text-align: center; min-height: 108px; display: flex; flex-direction: column; justify-content: center; }
+        .sop-step .sop-index { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0 auto 7px; border-radius: 50%; background: #1a5276; color: #fff; font-size: 13px; font-weight: bold; line-height: 1; }
+        .sop-step .sop-name { font-size: 15px; font-weight: bold; color: #27384a; line-height: 1.35; }
+        .sop-step .sop-desc { font-size: 12px; color: #667085; line-height: 1.35; margin-top: 5px; }
+        .sop-arrow { flex: 0 0 24px; display: flex; align-items: center; justify-content: center; color: #1a5276; font-size: 22px; font-weight: bold; }
+        .sop-analysis-link { position: relative; height: 42px; }
+        .sop-analysis-link::before { content: ""; position: absolute; top: -1px; bottom: 9px; left: 50%; border-left: 1px solid #9fb2c3; }
+        .sop-analysis-link::after, .sop-dashed-link::after { content: ""; position: absolute; left: calc(50% - 5px); bottom: 4px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #1a5276; }
+        .sop-analysis-stack { display: grid; gap: 0; }
+        .sop-analysis-section { border: 1px solid #b8c7d3; background: #fff; padding: 15px 16px 16px; }
+        .sop-analysis-section h4 { font-size: 15px; color: #1a5276; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #edf1f5; }
+        .sop-module-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .sop-module-row.multi { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .sop-module-card { border: 1px solid #d4dee7; background: #fbfcfd; padding: 11px 12px 12px; min-height: 94px; }
+        .sop-module-title { display: block; margin-bottom: 5px; color: #27384a; font-size: 13px; font-weight: bold; line-height: 1.35; }
+        .sop-module-card ul { margin: 0; padding-left: 17px; color: #444; font-size: 12.5px; line-height: 1.52; }
+        .sop-module-card.compact { min-height: 58px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .sop-module-card.compact .sop-module-title { margin-bottom: 0; }
+        .sop-dashed-link { position: relative; height: 42px; }
+        .sop-dashed-link::before { content: ""; position: absolute; top: 5px; bottom: 9px; left: 50%; border-left: 1px dashed #8aa3b8; }
+        .sop-workflow-footnote { margin-top: 12px; font-size: 12px; color: #777; line-height: 1.5; }
+        @media (max-width: 760px) { .sop-flow-row, .sop-module-row, .sop-module-row.multi { display: block; } .sop-step, .sop-module-card { margin-bottom: 10px; } .sop-arrow { height: 24px; transform: rotate(90deg); margin: 2px 0; } }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     COVER
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page cover-page" id="cover">
+    <img class="cover-logo" src="{{ logo_base64 }}" alt="Logo">
+    <div class="cover-tagline">值得信赖的临床科研解决方案服务商</div>
+    <h1>{{ report_title }}</h1>
+    <div class="cover-en">TCR Immune Repertoire Sequencing Report</div>
+    <div class="cover-info">
+        <p style="text-indent:0;">报告单位：{{ company }}</p>
+        <p style="text-indent:0;">报告日期：{{ report_date }}</p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STICKY HEADER (appears after cover, sticks on scroll)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<header class="report-header">
+    <img class="header-logo" src="{{ logo_base64 }}" alt="Logo">
+    <span class="header-tagline">值得信赖的临床科研解决方案服务商</span>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 1
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+    <div class="section" id="sec-background">
+        <h2>一、背景介绍</h2>
+
+        <h3>1.1 TCR 组库简介</h3>
+        <p>T淋巴细胞是最主要的免疫细胞，负责细胞免疫，当机体受到抗原刺激后，其可活化、分裂增殖并发生特异性免疫应答。T细胞抗原受体(T cell receptor，TCR)是T细胞特异性识别和结合抗原肽/组织相容性复合体（MHC）的分子结构，TCR由多条肽链组成，每条肽链的互补决定区（CDR）氨基酸组成和排列顺序呈现高度多样性，构成容量巨大的TCR库，即TCR免疫组库(Immune Repertoire，IR)。因此，TCR免疫组库的概念是指任意指定时间，某个个体的循环系统中所有特异性不同的T淋巴细胞克隆的总和。</p>
+        <p>TCR识别抗原所产生的活化信号由CD3转导至T细胞内，CDR3能够直接与MHC所呈递的多肽结合，而且序列高度可变，故TCR的抗原结合特异性和多样性主要由CDR3决定。狭义上来讲，TCR CDR3序列分析即可代表TCR免疫组库研究。</p>
+        <p>TCR免疫组库测序技术是指采用多重PCR技术对CDR3区域进行捕获，利用高通量测序技术检测T细胞受体基因的CDR3序列，通过分析TCR的多样性情况，评估肿瘤患者T细胞组成特点及免疫细胞浸润情况，全面分析受检者抗肿瘤免疫反应特点，辅助临床筛选免疫治疗有效人群。</p>
+
+        <h3>1.2 检测流程</h3>
+        <p>分离外周血中的血细胞或裂解组织，提取DNA，采用专门针对CDR3的V区及J区两端设计的多重PCR引物对CDR3进行捕获，通过Novaseq6000平台进行高通量测序。</p>
+
+        <h3>1.3 信息分析流程</h3>
+
+<div class="sop-workflow" role="img" aria-label="TCR免疫组库信息分析流程图">
+    <div class="sop-workflow-title">信息分析流程图</div>
+
+    <div class="sop-input-block">
+        <div class="sop-block-title">数据处理流程</div>
+        <div class="sop-flow-row">
+            <div class="sop-step">
+                <span class="sop-index">1</span>
+                <div class="sop-name">原始数据</div>
+                <div class="sop-desc">FASTQ reads</div>
+            </div>
+            <div class="sop-arrow">&#8594;</div>
+            <div class="sop-step">
+                <span class="sop-index">2</span>
+                <div class="sop-name">数据质控及过滤</div>
+                <div class="sop-desc">低质量序列过滤、Q20/Q30、GC、clean reads统计</div>
+            </div>
+            <div class="sop-arrow">&#8594;</div>
+            <div class="sop-step">
+                <span class="sop-index">3</span>
+                <div class="sop-name">拼接双端数据</div>
+                <div class="sop-desc">PE reads合并、插入片段长度和引物命中统计</div>
+            </div>
+            <div class="sop-arrow">&#8594;</div>
+            <div class="sop-step">
+                <span class="sop-index">4</span>
+                <div class="sop-name">参考基因组比对</div>
+                <div class="sop-desc">V/D/J基因识别、CDR3序列提取、clonotype生成</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sop-analysis-link" aria-hidden="true"></div>
+
+    <div class="sop-analysis-stack">
+        <div class="sop-analysis-section">
+            <h4>单样本统计分析</h4>
+            <div class="sop-module-row">
+                <div class="sop-module-card">
+                    <span class="sop-module-title">CDR3分析</span>
+                    <ul>
+                        <li>CDR3长度分布</li>
+                        <li>不同长度CDR3中高频V基因分布</li>
+                        <li>CDR3氨基酸组成分布</li>
+                        <li>高丰度TCR克隆CDR3基序</li>
+                    </ul>
+                </div>
+                <div class="sop-module-card">
+                    <span class="sop-module-title">基因分析</span>
+                    <ul>
+                        <li>V、J基因分析</li>
+                        <li>V-J基因配对分析</li>
+                    </ul>
+                </div>
+                <div class="sop-module-card">
+                    <span class="sop-module-title">克隆分析</span>
+                    <ul>
+                        <li>克隆多样性分析</li>
+                        <li>TCR克隆频率分布</li>
+                        <li>克隆组成分布</li>
+                        <li>TCR功能注释</li>
+                        <li>癌症风险评估</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="sop-dashed-link" aria-hidden="true"></div>
+
+        <div class="sop-analysis-section">
+            <h4>多样本整体分析</h4>
+            <div class="sop-module-row multi">
+                <div class="sop-module-card compact"><span class="sop-module-title">主成分聚类分析（PCA）</span></div>
+                <div class="sop-module-card compact"><span class="sop-module-title">V、J基因聚类分析</span></div>
+                <div class="sop-module-card compact"><span class="sop-module-title">显著扩增TCR分析</span></div>
+                <div class="sop-module-card compact"><span class="sop-module-title">样本间克隆相似性分析</span></div>
+                <div class="sop-module-card compact"><span class="sop-module-title">组间差异分析</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sop-workflow-footnote">注：单样本报告展示当前样本的分析结果；当项目包含多个样本时，进一步进行批量汇总、样本间比较和整体趋势分析。</div>
+</div>
+
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 2
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+    <div class="section" id="sec-samples">
+        <h2>二、样本信息</h2>
+        <p>表 2.1 展示本次分析样本信息。</p>
+
+        <div class="table-block">
+            <div class="table-title">表2.1 样品编号及文库表</div>
+            <div class="table-note">
+                <p>注：</p>
+                <p>(1) SampleID ：样品名；</p>
+                <p>(2) PatientID ：患者编号；</p>
+                <p>(3) Group ：样本分组；</p>
+                <p>(4) Type ：样本类型；</p>
+                <p>(5) SampleType ：样本来源；</p>
+            </div>
+            <div class="table-wrapper">
+                {{ sample_info_table | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 3
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+    <div class="section" id="sec-qc">
+        <h2>三、数据质控</h2>
+        <p>对样本进行 TCR 测序，满足质控（clonalReads ≥ 1M）的样本进入后续分析。</p>
+
+        <div class="table-block">
+            <div class="table-title">表3.1 测序质控数据表</div>
+            <div class="table-note">
+                <p>注：</p>
+                <p>(1) Sample ：样品名；</p>
+                <p>(1) Sample ：样品名；</p>
+                <p>(2) Raw Data(G) ：下机原始数据量；</p>
+                <p>(3) Clean Data(G) ：过滤后有效数据量；</p>
+                <p>(4) Raw Reads ：测序下机序列条数；</p>
+                <p>(5) Clean Reads ：过滤后序列条数；</p>
+                <p>(6) Clean Q30 ：过滤后序列的整体 Q30；</p>
+                <p>(7) Clean Ratio ：过滤后序列数与原始序列数的比例；</p>
+                <p>(8) Clonal Reads ：克隆序列条数；</p>
+                <p>(9) Clonal Ratio ：克隆序列数占过滤后序列数的比例；</p>
+            </div>
+            <div class="table-wrapper">
+                {{ qc_table | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 4
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+    <div class="section" id="sec-single">
+        <h2>四、单样本分析</h2>
+
+        <h3>4.1 CDR3 分析</h3>
+        <p>CDR3 长度分布呈现一定的规律。本项目对每个样品所有 CDR3 的氨基酸序列长度做了统计，展示在不同 CDR3 长度分布下频率 top10 克隆的分布情况，以及频率 top12 克隆的 V 基因分布情况。T细胞受体（TCR）的互补决定区3（CDR3）是直接参与抗原识别的核心区域，其氨基酸组成分布受到抗原特异性选择影响，与免疫应答密切相关。T细胞受体（TCR）的互补决定区3（CDR3）是直接参与抗原识别的核心区域，对单个样本中丰度最高的前100个TCR克隆进行统计，展示CDR3氨基酸序列在各个位置上出现的残基及其频率。</p>
+
+        {% for card in single_sample_charts.sec41 %}
+        <div class="figure-block">
+            <div class="figure-title">{{ card.title }}</div>
+            {% if '<img' in card.html %}
+                {{ card.html | safe }}
+            {% else %}
+                <div class="plotly-container">{{ card.html | safe }}</div>
+            {% endif %}
+            {% if card.caption %}
+            <div class="figure-note">注：{{ card.caption | safe }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <h3>4.2 基因分析</h3>
+        <p>T细胞受体（TCR）的互补决定区3（CDR3）是直接参与抗原识别的核心区域。本研究对单个样本 V 基因和 J 基因的种类及相应使用频率进行了统计。V-J 组合代表完整的 CDR3 序列，对单个样本中 V-J 组合形式及频率进行了统计。</p>
+
+        {% for card in single_sample_charts.sec42 %}
+        <div class="figure-block">
+            <div class="figure-title">{{ card.title }}</div>
+            {% if '<img' in card.html %}
+                {{ card.html | safe }}
+            {% else %}
+                <div class="plotly-container">{{ card.html | safe }}</div>
+            {% endif %}
+            {% if card.caption %}
+            <div class="figure-note">注：{{ card.caption | safe }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <h3>4.3 克隆分析</h3>
+        <p>评估 TCR 克隆多样性的指标包括 CloneCounts、 Shannon Index、 Simpson Index等。评估 TCR克隆性的指标包括 Evenness 和 Clonality。多样性和克隆性从整体上反映 TCR 克隆群体的结构特征。</p>
+        <p>TCR功能注释（Functional Annotation）是指通过生物信息学手段，将TCR序列（尤其是CDR3区）与其潜在的抗原特异性、T细胞功能状态或疾病关联性进行关联分析的过程。本项目基于Cancer Antigenic Peptide Database（CAPED）和Immune Epitope Database (IEDB)数据库收录的表位-TCR信息，对样本中检出的TCR序列进行功能注释。</p>
+        <p>基于前期构建的肺癌相关TCR数据库，通过比对TCR序列相似性和丰度，评估待测样本的癌症TCR信号水平。</p>
+
+        {% for card in single_sample_charts.sec43 %}
+        <div class="figure-block">
+            <div class="figure-title">{{ card.title }}</div>
+            {% if '<img' in card.html %}
+                {{ card.html | safe }}
+            {% else %}
+                <div class="plotly-container">{{ card.html | safe }}</div>
+            {% endif %}
+            {% if card.caption %}
+            <div class="figure-note">注：{{ card.caption | safe }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+    <div class="section" id="sec-multi">
+        <h2>五、多样本整体分析</h2>
+
+        {% if multi_sample_charts %}
+        <h3>5.1 主成分聚类分析 (PCA)</h3>
+        <p>PCA 分析(Principal Component Analysis)即主成分分析，是一种降维分析技术，这方法可以有效的找出数据中最"主要"的元素和结构，去除噪音和冗余，将原有的复杂数据降维，揭示隐藏在复杂数据背后的简单结构。对 V 基因频率、 VJ 组合频率、 VDJ 组合频率和 Clonetype 频率进行主成分计算，取第一、二位的主成分值进行作图。</p>
+
+        <h3>5.2 VJ 基因聚类分析</h3>
+        <p>VJ 基因聚类分析是对多样本中 V/J 基因的使用分布情况进行分析的直观可视化方法，并对样本和 V/J 基因使用情况进行无监督聚类分析展示。</p>
+
+        <h3>5.3 样本间克隆相似性分析</h3>
+        <p>比较两样本间的克隆相似性，用颜色变化来反映二维矩阵表格中的数据信息，直观反映出样本间的相似度大小（根据 Morisita 指数计算）。</p>
+
+        <h3>5.4 组间差异分析</h3>
+        <p>根据所提供的分组信息对样品分组，对两组样品间shannonIndex, simpsonIndex, evenness 参数进行比较分析。两两分组间进行 Wilcoxon 检验。</p>
+
+        <h3>5.5 样本间TCR克隆重叠关系分析</h3>
+        <p>比较5个及以下样本间的克隆重叠情况，主要用于评估不同样本间共享T细胞克隆的比例及相似性。</p>
+
+        <h3>5.6 鉴定发生显著扩增的TCR</h3>
+        <p>需要2样本或者2组以上比较分析，比较抗原诱导前后样本，鉴定发生显著克隆扩增的TCR，展示TCR丰度变化。</p>
+        {% else %}
+        <p>多样本整体分析需要 2 个及以上样本才能进行，用于比较不同样本间的 TCR 免疫组库异同。主要包括以下分析项：</p>
+        <p><b>PCA 聚类分析</b> — 基于 V 基因频率对多样本进行降维聚类，直观展示样本间的相似性与分组趋势。</p>
+        <p><b>VJ 基因聚类热图</b> — 对多样本的 V/J 基因使用频率进行无监督层次聚类，识别样本亚群及特征基因。</p>
+        <p><b>克隆相似性分析</b> — 基于 Morisita 指数计算样本间的克隆组成相似度，以热图展示。</p>
+        <p><b>组间多样性比较</b> — 对不同分组样本的 Shannon、Simpson、Evenness 指数进行比较，并做 Wilcoxon 检验。</p>
+        <p><b>克隆重叠分析</b> — 韦恩图展示不同样本间共享与独有 TCR 克隆的数量和比例。</p>
+        <p><b>显著扩增鉴定</b> — 对配对或治疗前后样本，鉴定发生显著克隆扩增的 TCR。</p>
+        <p style="color:#1a5276;font-weight:bold;">当前为单样本报告模式，不进行上述多样本分析。</p>
+        {% endif %}
+
+        {% for card in multi_sample_charts %}
+        <div class="figure-block">
+            <div class="figure-title">{{ card.title }}</div>
+            {% if '<img' in card.html %}
+                {{ card.html | safe }}
+            {% else %}
+                <div class="plotly-container">{{ card.html | safe }}</div>
+            {% endif %}
+            {% if card.caption %}
+            <div class="figure-note">注：{{ card.caption | safe }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 6 & 7
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+    <div class="section" id="sec-software">
+        <h2>六、软件列表</h2>
+        <div class="table-block">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>分析内容</th>
+                        <th>软件</th>
+                        <th>备注</th>
+                        <th>软件版本</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>质控</td><td>fastp</td><td>质控，得到 Clean Data</td><td>0.20.0</td></tr>
+                    <tr><td>PE read合并</td><td>FLASH</td><td>根据PE read overlap 区域，对双端 reads 进行合并</td><td>1.2.11</td></tr>
+                    <tr><td>比对及TCR 克隆分析</td><td>RTCR</td><td>将已经 merge 好的单端 reads 比对到 V、 D、 J 三个基因上；并组装成克隆序列</td><td>0.5.1</td></tr>
+                    <tr><td>TCR 克隆统计分析</td><td>immunarch</td><td>将已经分析出来的 TCR 克隆序列进行统计分析</td><td>1.0.0</td></tr>
+                    <tr><td>V-J 基因配对可视化</td><td>tcr_report</td><td>Plotly 桑基图展示 V-J 基因配对关系</td><td>{{ version }}</td></tr>
+                    <tr><td>报告生成</td><td>tcr_report</td><td>自动化分析报告生成系统</td><td>{{ version }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section" id="sec-reference">
+        <h2>七、参考文献</h2>
+        <p style="text-indent:0;">[1] Shifu, C., Yanqing, Z., Yaru, C., Jia, G. (2018). Fastp: an ultra-fast all-in-one fastq preprocessor. Bioinformatics, 34(17), i884-i890.</p>
+        <p style="text-indent:0;">[2] Tanja Magoč, Steven L. Salzberg. (2011). FLASH: fast length adjustment of short reads to improve genome assemblies, Bioinformatics, 27(21), 2957–2963.</p>
+        <p style="text-indent:0;">[3] Bram Gerritsen and others, RTCR: a pipeline for complete and accurate recovery of T cell repertoires from high throughput sequencing data, Bioinformatics, Volume 32, Issue 20, October 2016, Pages 3098–3106.</p>
+        <p style="text-indent:0;">[4] Nazarov V, Tsvetkov V, Fiadziushchanka S, Rumynskiy E, Popov A, Balashov I, Samokhina M (2023). immunarch: Bioinformatics Analysis of T-Cell and B-Cell Immune Repertoires.</p>
+    </div>
+
+    <div class="report-footer">
+        <p>微信公众号 &nbsp;|&nbsp; 公司官网</p>
+        <p>400-999-8450 &nbsp;|&nbsp; 邮箱：info@haplox.com</p>
+        <p>{{ company }}</p>
+        <p>深圳市南山区学苑大道1001号智园二期D2栋11、12层</p>
+        <p style="margin-top: 8px;">{{ company }} 2014-{{ report_year }} © 版权所有</p>
+    </div>
+</div>
+
+</body>
+</html>

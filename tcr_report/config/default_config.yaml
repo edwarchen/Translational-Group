@@ -1,0 +1,57 @@
+# TCR Immune Repertoire Report — Default Configuration
+# =======================================================
+
+# --- Report Metadata ---
+report:
+  title: "TCR 免疫组库测序报告"
+  subtitle: "TCR Analysis Report"
+  company: "深圳海普洛斯医学检验实验室"
+  date: "auto"  # "auto" uses current date, or specify "2025-09-18"
+
+# --- Data Input ---
+data:
+  qc_table: "qc_table.csv"              # 质控数据
+  clone_diversity: "clone_diversity.csv" # 克隆多样性指标
+  functional_annotation: "functional_annotation.csv"  # TCR功能注释
+  cancer_risk: "cancer_risk.csv"        # 癌症风险评估
+  cdr3_length: "cdr3_length.csv"        # CDR3长度分布
+  vj_pairing: "vj_pairing.csv"          # V-J配对数据
+  sample_info: "sample_info.csv"        # 样本信息
+  v_gene_freq: "v_gene_freq.csv"        # V基因频率
+  j_gene_freq: "j_gene_freq.csv"        # J基因频率
+  clone_composition: "clone_composition.csv"  # 克隆组成
+  tcr_motif: "tcr_motif.csv"            # CDR3基序数据
+  significant_expansion: "significant_expansion.csv"  # 显著扩增TCR
+
+# --- Sample Groups (for multi-sample analysis) ---
+# Define groups for box plots, PCA coloring, etc.
+groups:
+  - name: "Benign"
+    samples: []
+  - name: "Malignant"
+    samples: []
+
+# --- Analysis Parameters ---
+parameters:
+  cdr3_top_clones: 10        # Top N clones to highlight in CDR3 distribution
+  v_gene_top: 12             # Top N V genes to highlight
+  functional_annotation:
+    min_frequency: 0.01      # Minimum frequency threshold for bubble chart
+  clonal_expansion:
+    fc_threshold: 1.0        # log2 fold change threshold
+    p_adj_threshold: 0.05    # Adjusted p-value threshold
+  diversity:
+    sampling_reads: 1000000  # Sampling reads for diversity normalization
+
+# --- Chart Styling ---
+style:
+  font_family: "Arial, sans-serif"
+  color_scheme: "morandi"    # "morandi" | "default" | "scientific"
+  plotly_theme: "plotly_white"
+  dpi: 300                   # For static fallback images
+
+# --- Output ---
+output:
+  directory: "output"
+  format: "html"             # "html" | "pdf" | "both"
+  pdf_engine: "wkhtmltopdf"  # PDF conversion tool
