@@ -11,6 +11,12 @@ Provides both a **command-line interface** (`tcreval`) and individual R/Python s
 
 ---
 
+## Version
+
+Current baseline: **Version 1.0.0**.
+
+This release records the existing TCR/BCR primer evaluation workflow as the Version 1.0 baseline so future development can be compared against this stable snapshot.
+
 ## Key Features
 
 - **One-Command Pipeline**: `tcreval run -i primers.xlsx -t TRB` runs the entire workflow end-to-end.
@@ -59,9 +65,17 @@ This executes all four steps and writes results to `results/`:
 | Step | What it does |
 |------|-------------|
 | Split | Parses primer Excel → V-forward + J-reverse FASTA files |
-| Evaluate | Runs `openPrimeR` coverage analysis → binding sites CSV, coverage stats, uncovered templates |
+| Evaluate | Runs `openPrimeR` coverage analysis → binding sites CSV, coverage stats, V/J summary report, uncovered templates |
 | Heatmap | Generates per-primer nucleotide alignment PNGs |
 | Uncovered | Generates heatmaps for missed templates |
+
+
+### User-Facing Coverage Summary
+
+The evaluation step also writes two user-facing coverage summaries under `results/coverage_tables/`:
+
+- `summary_coverage.csv` — a normalized V/J coverage table with target, region, group, covered template count, total template count, percentage, and original coverage text.
+- `coverage_report.txt` — a short text report with sentences such as `TRB V-region coverage: 187 of 191 templates covered (97.91%).` and `TRB J-region coverage: 15 of 16 templates covered (93.75%).`
 
 ---
 
@@ -127,7 +141,7 @@ Primers are classified as V (forward) or J (reverse) by the presence of `V` or `
 ├── pyproject.toml                 # pip installation metadata
 ├── requirements.txt               # Python dependencies
 └── results/                       # Generated output (gitignored)
-    ├── coverage_tables/           # Binding sites + coverage stats (CSV)
+    ├── coverage_tables/           # Binding sites, coverage stats, summary_coverage.csv, coverage_report.txt
     ├── coverage_plots/            # Summary coverage heatmaps (PNG)
     ├── primer_reference_heatmaps/ # Per-primer nucleotide alignments (PNG)
     └── uncovered_templates/       # Uncovered sequences + heatmaps by gene family
