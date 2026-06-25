@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCR Report PDF"
+  short_description: "Standardize Haplox TCR HTML reports into verified PDFs."
+  default_prompt: "Generate standardized PDF reports from Haplox TCR HTML files and verify layout."
